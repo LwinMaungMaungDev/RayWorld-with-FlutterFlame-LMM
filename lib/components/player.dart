@@ -1,13 +1,20 @@
 import 'package:flame/components.dart';
+import 'package:flame/sprite.dart';
 
 import '../helpers/direction.dart';
 
-// Extends SpriteComponent to render a static image in your game.
+// Extends SpriteAnimationComponent to set an active animation in your game.
 // By using the HasGameRef mixin,
 // the Player now has access to the core functionality of the Flame engine.
-class Player extends SpriteComponent with HasGameRef {
+class Player extends SpriteAnimationComponent with HasGameRef {
   Direction direction = Direction.none;
   final double _playerSpeed = 300.0;
+  final double _animationSpeed = 0.15;
+  late final SpriteAnimation _runDownAnimation;
+  late final SpriteAnimation _runLeftAnimation;
+  late final SpriteAnimation _runUpAnimation;
+  late final SpriteAnimation _runRightAnimation;
+  late final SpriteAnimation _standingAnimation;
 
   Player()
       : super(
@@ -29,27 +36,52 @@ class Player extends SpriteComponent with HasGameRef {
   void movePlayer(double delta) {
     switch (direction) {
       case Direction.up:
+        animation = _runUpAnimation;
         moveUp(delta);
         break;
       case Direction.down:
+        animation = _runDownAnimation;
         moveDown(delta);
         break;
       case Direction.left:
+        animation = _runLeftAnimation;
         moveLeft(delta);
         break;
       case Direction.right:
+        animation = _runRightAnimation;
         moveRight(delta);
         break;
       case Direction.none:
+        animation = _standingAnimation;
         break;
     }
   }
 
   @override
   Future<void> onLoad() async {
-    super.onLoad();
-    sprite = await gameRef.loadSprite('player.png'); // Load the sprite
-    position = gameRef.size / 2; // Set the position at middle
+    await _loadAnimations().then((_) => {animation = _standingAnimation});
+  }
+
+  Future<void> _loadAnimations() async {
+    final spriteSheet = SpriteSheet(
+      image: await gameRef.images.load('player_spritesheet.png'),
+      srcSize: Vector2(29.0, 32.0),
+    );
+
+    _runDownAnimation =
+        spriteSheet.createAnimation(row: 0, stepTime: _animationSpeed, to: 4);
+
+    _runLeftAnimation =
+        spriteSheet.createAnimation(row: 1, stepTime: _animationSpeed, to: 4);
+
+    _runUpAnimation =
+        spriteSheet.createAnimation(row: 2, stepTime: _animationSpeed, to: 4);
+
+    _runRightAnimation =
+        spriteSheet.createAnimation(row: 3, stepTime: _animationSpeed, to: 4);
+
+    _standingAnimation =
+        spriteSheet.createAnimation(row: 0, stepTime: _animationSpeed, to: 1);
   }
 
   void moveDown(double delta) {
