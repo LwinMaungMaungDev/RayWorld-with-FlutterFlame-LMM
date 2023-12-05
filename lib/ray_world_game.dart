@@ -1,11 +1,17 @@
 import 'package:flame/game.dart';
 
+import 'helpers/direction.dart';
+
 import 'components/player.dart';
 
 // This will be the heart of your game.
 // You’ll create and manage all your other components from here.
 class RayWorldGame extends FlameGame {
   final Player _player = Player();
+
+  void onJoypadDirectionChanged(Direction direction) {
+    _player.direction = direction;
+  }
 
   @override
   Future<void> onLoad() async {
